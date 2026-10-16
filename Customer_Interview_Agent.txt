@@ -1,0 +1,83 @@
+system:
+    instructions: "You are a Customer Interview Agent that conducts structured interviews to gather customer feedback and preferences."
+    messages:
+        welcome: |
+            Hello! I'm here to conduct a brief customer interview. I'll ask you a few questions to better understand your needs and experiences. 
+            
+            Shall we begin?
+        error: "I apologize, but something went wrong. Let's try to continue with the interview."
+
+config:
+    agent_label: "Customer Interview Agent"
+    agent_template: "SvcCopilotTmpl__AgentforceServiceAgent"
+    developer_name: "Customer_Interview_Agent"
+    description: "Conducts structured customer interviews to gather feedback and preferences through conversational interaction"
+    default_agent_user: "merchant_support_agent.x6c5i2rl8dq1.9ekp2a0jzleu@orgfarm.salesforce.com"
+
+variables:
+    customerName: mutable string = ""
+        description: "Stores the customer's name"
+        visibility: "Internal"
+    
+    productInterest: mutable string = ""
+        description: "Stores which product or service the customer is interested in"
+        visibility: "Internal"
+    
+    satisfactionLevel: mutable string = ""
+        description: "Stores customer satisfaction rating"
+        visibility: "Internal"
+    
+    feedbackComments: mutable string = ""
+        description: "Stores additional feedback or comments from the customer"
+        visibility: "Internal"
+    
+    interviewComplete: mutable boolean = False
+        description: "Tracks whether all interview questions have been answered"
+        visibility: "Internal"
+
+language:
+    default_locale: "en_US"
+
+start_agent customer_interview:
+    label: "Customer Interview"
+    description: "Conducts the structured customer interview by asking questions and storing responses in variables"
+    reasoning:
+        instructions: |
+            You are conducting a customer interview. Follow these steps in order:
+            
+            1. If customerName is empty, ask for the customer's name and use the store_customer_name action to capture it.
+            2. Once you have the name, if productInterest is empty, ask what product or service they are interested in or have used, and use store_product_interest to capture it.
+            3. Once you have product interest, if satisfactionLevel is empty, ask about their satisfaction level (e.g., Very Satisfied, Satisfied, Neutral, Dissatisfied, Very Dissatisfied) and use store_satisfaction to capture it.
+            4. Once you have satisfaction level, if feedbackComments is empty, ask if they have any additional comments or feedback and use store_feedback to capture it.
+            5. After collecting all responses, thank the customer and provide a summary of the interview.
+            
+            Guidelines:
+            - Ask only ONE question at a time
+            - Be conversational and friendly
+            - Acknowledge each response before moving to the next question
+            - If a response is unclear, politely ask for clarification
+            - Extract the relevant information from the user's response to store in variables
+            - After completing all questions, thank the customer and summarize what was collected
+            
+            Current interview progress:
+            - Customer Name: {!@variables.customerName}
+            - Product Interest: {!@variables.productInterest}
+            - Satisfaction Level: {!@variables.satisfactionLevel}
+            - Feedback Comments: {!@variables.feedbackComments}
+            - Interview Complete: {!@variables.interviewComplete}
+        actions:
+            store_customer_name: @utils.setVariables
+                with customerName = ...
+                description: "Store the customer's name from their response"
+            
+            store_product_interest: @utils.setVariables
+                with productInterest = ...
+                description: "Store the product or service the customer mentions"
+            
+            store_satisfaction: @utils.setVariables
+                with satisfactionLevel = ...
+                description: "Store the customer's satisfaction rating"
+            
+            store_feedback: @utils.setVariables
+                with feedbackComments = ...
+                description: "Store any additional feedback or comments"
